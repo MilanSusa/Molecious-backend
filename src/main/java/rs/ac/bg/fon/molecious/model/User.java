@@ -4,12 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.List;
 
+@Entity
 @Data
 @NoArgsConstructor
 @Table(name = "molecious_user")
@@ -23,6 +21,6 @@ public class User {
     private String email;
     @JsonIgnore
     private String password;
-    @OneToMany
+    @OneToMany(mappedBy = "user")
     private List<Inference> inferences;
 }
