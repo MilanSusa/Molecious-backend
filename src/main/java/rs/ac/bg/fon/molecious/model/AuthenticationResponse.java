@@ -1,11 +1,11 @@
 package rs.ac.bg.fon.molecious.model;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-@Data
-@NoArgsConstructor
+@AllArgsConstructor
+@Getter
 public class AuthenticationResponse {
 
-    private String jwt;
+    private final String jwt;
 }
