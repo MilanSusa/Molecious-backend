@@ -1,6 +1,5 @@
 package rs.ac.bg.fon.molecious.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -19,7 +18,6 @@ public class User {
     private String firstName;
     private String lastName;
     private String email;
-    @JsonIgnore
     private String password;
     @OneToMany(mappedBy = "user")
     private List<Inference> inferences;

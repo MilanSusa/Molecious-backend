@@ -12,6 +12,7 @@ import rs.ac.bg.fon.molecious.config.security.util.JwtUtil;
 import rs.ac.bg.fon.molecious.controller.wrapper.Response;
 import rs.ac.bg.fon.molecious.model.AuthenticationRequest;
 import rs.ac.bg.fon.molecious.model.AuthenticationResponse;
+import rs.ac.bg.fon.molecious.model.User;
 import rs.ac.bg.fon.molecious.service.UserService;
 import rs.ac.bg.fon.molecious.service.impl.UserDetailsServiceImpl;
 
@@ -40,5 +41,10 @@ public class UserController {
         UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
         String jwt = jwtUtil.generateToken(userDetails);
         return new Response<>(new AuthenticationResponse(jwt));
+    }
+
+    @PostMapping("sign-up")
+    public User signUp(@RequestBody User user) {
+        return userService.signUp(user);
     }
 }
