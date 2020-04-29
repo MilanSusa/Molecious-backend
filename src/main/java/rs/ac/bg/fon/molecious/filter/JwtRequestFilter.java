@@ -1,4 +1,4 @@
-package rs.ac.bg.fon.molecious.filters;
+package rs.ac.bg.fon.molecious.filter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
