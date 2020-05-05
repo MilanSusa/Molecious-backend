@@ -12,6 +12,7 @@ import rs.ac.bg.fon.molecious.service.impl.UserDetailsServiceImpl;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -28,13 +29,18 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest httpServletRequest,
                                     HttpServletResponse httpServletResponse,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String authorizationHeader = httpServletRequest.getHeader("Authorization");
         String email = null;
         String jwt = null;
+        Cookie[] cookies = httpServletRequest.getCookies();
 
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwt = authorizationHeader.substring(7);
-            email = jwtUtil.extractUsername(jwt);
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("JWT".equals(cookie.getName())) {
+                    jwt = cookie.getValue();
+                    email = jwtUtil.extractUsername(jwt);
+                    break;
+                }
+            }
         }
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
