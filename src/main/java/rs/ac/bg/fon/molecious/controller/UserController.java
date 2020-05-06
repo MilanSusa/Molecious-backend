@@ -4,12 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import rs.ac.bg.fon.molecious.config.security.util.JwtUtil;
 import rs.ac.bg.fon.molecious.controller.wrapper.Response;
+import rs.ac.bg.fon.molecious.dto.UserDto;
 import rs.ac.bg.fon.molecious.model.AuthenticationRequest;
 import rs.ac.bg.fon.molecious.model.AuthenticationResponse;
 import rs.ac.bg.fon.molecious.model.User;
@@ -44,7 +42,13 @@ public class UserController {
     }
 
     @PostMapping("sign-up")
-    public User signUp(@RequestBody User user) {
-        return userService.signUp(user);
+    public Response<User> signUp(@RequestBody User user) {
+        return new Response<>(userService.signUp(user));
+    }
+
+    @PostMapping("jwt")
+    public Response<UserDto> extractUserFromJwt(@CookieValue String JWT) {
+        String email = jwtUtil.extractUsername(JWT);
+        return new Response<>(new UserDto(userService.findByEmail(email)));
     }
 }
