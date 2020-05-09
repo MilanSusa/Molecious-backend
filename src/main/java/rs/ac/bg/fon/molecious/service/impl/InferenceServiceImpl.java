@@ -42,56 +42,29 @@ public class InferenceServiceImpl implements InferenceService {
 
     @Override
     public Inference createInferenceForUser(String JWT, MultipartFile file) {
-        Inference inference = new Inference();
-        inference = setInferenceUser(inference, JWT);
-        inference = setProbabilities(inference, file);
+        User user = extractUser(JWT);
+        LinkedHashMap<String, String> predictions = extractPredictions(file);
+
+        Inference inference = InferenceBuilderImpl.load()
+                .setInferenceUser(user)
+                .setProbabilities(predictions)
+                .build();
+
         return inferenceRepository.save(inference);
     }
 
-    private Inference setInferenceUser(Inference inference, String JWT) {
+    private User extractUser(String JWT) {
         String email = jwtUtil.extractUsername(JWT);
-        User user = userService.findByEmail(email);
-        inference.setUser(user);
-        return inference;
+        return userService.findByEmail(email);
     }
 
-    private Inference setProbabilities(Inference inference, MultipartFile file) {
-        LinkedHashMap<String, String> predictions = (LinkedHashMap<String, String>) this.performInference(file).getData();
-
-        predictions.forEach((clazz, probability) -> {
-            switch (clazz) {
-                case "akiec":
-                    inference.setActinicKeratosesProbability(Double.valueOf(probability));
-                    break;
-                case "bcc":
-                    inference.setBasalCellCarcinomaProbability(Double.valueOf(probability));
-                    break;
-                case "bkl":
-                    inference.setBenignKeratosisLikeLesionsProbability(Double.valueOf(probability));
-                    break;
-                case "df":
-                    inference.setDermatofibromaProbability(Double.valueOf(probability));
-                    break;
-                case "mel":
-                    inference.setMelanomaProbability(Double.valueOf(probability));
-                    break;
-                case "nv":
-                    inference.setMelanocyticNeviProbability(Double.valueOf(probability));
-                    break;
-                case "vasc":
-                    inference.setVascularLesionsProbability(Double.valueOf(probability));
-                    break;
-                default:
-                    break;
-            }
-        });
-
-        return inference;
+    private LinkedHashMap<String, String> extractPredictions(MultipartFile file) {
+        return (LinkedHashMap<String, String>) performInference(file).getData();
     }
 
     private Response performInference(MultipartFile file) {
         MultiValueMap<String, Object> data = new LinkedMultiValueMap<>();
-        data.add("file", new FileSystemResource(this.convert(file)));
+        data.add("file", new FileSystemResource(convert(file)));
 
         return webClientBuilder.build()
                 .post()
