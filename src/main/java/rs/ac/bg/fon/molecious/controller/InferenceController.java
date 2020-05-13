@@ -16,9 +16,9 @@ public class InferenceController {
     @Autowired
     private InferenceService inferenceService;
 
-    @GetMapping("users/{userId}")
-    public Response<List<Inference>> findAllByUserId(@PathVariable Long userId) {
-        return new Response<>(inferenceService.findAllByUserId(userId));
+    @GetMapping("users/jwt")
+    public Response<List<Inference>> findAllByUserJWT(@CookieValue String JWT) {
+        return new Response<>(inferenceService.findAllByUserJWT(JWT));
     }
 
     @PostMapping

@@ -11,17 +11,19 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import rs.ac.bg.fon.molecious.config.security.util.JwtUtil;
 import rs.ac.bg.fon.molecious.controller.wrapper.Response;
+import rs.ac.bg.fon.molecious.exception.UserDoesNotExistException;
 import rs.ac.bg.fon.molecious.model.Inference;
 import rs.ac.bg.fon.molecious.model.User;
 import rs.ac.bg.fon.molecious.repository.InferenceRepository;
+import rs.ac.bg.fon.molecious.repository.UserRepository;
 import rs.ac.bg.fon.molecious.service.InferenceService;
-import rs.ac.bg.fon.molecious.service.UserService;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class InferenceServiceImpl implements InferenceService {
@@ -29,15 +31,28 @@ public class InferenceServiceImpl implements InferenceService {
     @Autowired
     private InferenceRepository inferenceRepository;
     @Autowired
-    private UserService userService;
+    private UserRepository userRepository;
     @Autowired
     private JwtUtil jwtUtil;
     @Autowired
     private WebClient.Builder webClientBuilder;
 
     @Override
-    public List<Inference> findAllByUserId(Long userId) {
-        return inferenceRepository.findAllByUserId(userId);
+    public List<Inference> findAllByUserJWT(String JWT) {
+        String email = jwtUtil.extractUsername(JWT);
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+
+        if (optionalUser.isEmpty()) {
+            throw new UserDoesNotExistException(
+                    new StringBuilder()
+                            .append("User with email ")
+                            .append(email)
+                            .append(" does not exist.")
+                            .toString()
+            );
+        }
+
+        return inferenceRepository.findAllByUserId(optionalUser.get().getId());
     }
 
     @Override
@@ -55,7 +70,19 @@ public class InferenceServiceImpl implements InferenceService {
 
     private User extractUser(String JWT) {
         String email = jwtUtil.extractUsername(JWT);
-        return userService.findByEmail(email);
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+
+        if (optionalUser.isEmpty()) {
+            throw new UserDoesNotExistException(
+                    new StringBuilder()
+                            .append("User with email ")
+                            .append(email)
+                            .append(" does not exist.")
+                            .toString()
+            );
+        }
+
+        return optionalUser.get();
     }
 
     private LinkedHashMap<String, String> extractPredictions(MultipartFile file) {

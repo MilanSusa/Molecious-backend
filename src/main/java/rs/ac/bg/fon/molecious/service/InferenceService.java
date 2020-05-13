@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface InferenceService {
 
-    List<Inference> findAllByUserId(Long userId);
+    List<Inference> findAllByUserJWT(String JWT);
 
     Inference createInferenceForUser(String JWT, MultipartFile file);
 }
