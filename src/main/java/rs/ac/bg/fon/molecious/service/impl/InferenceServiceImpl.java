@@ -70,6 +70,7 @@ public class InferenceServiceImpl implements InferenceService {
         Inference inference = InferenceBuilderImpl.load()
                 .setInferenceUser(user)
                 .setProbabilities(predictions)
+                .setImageDownloadUrl(firebaseImageDownloadUrl)
                 .build();
 
         return inferenceRepository.save(inference);

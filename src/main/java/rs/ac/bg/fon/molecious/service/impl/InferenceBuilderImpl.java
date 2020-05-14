@@ -2,6 +2,7 @@ package rs.ac.bg.fon.molecious.service.impl;
 
 import lombok.Setter;
 import rs.ac.bg.fon.molecious.builder.InferenceBuilder;
+import rs.ac.bg.fon.molecious.builder.holder.ImageUrlHolder;
 import rs.ac.bg.fon.molecious.builder.holder.ProbabilitiesHolder;
 import rs.ac.bg.fon.molecious.builder.holder.UserHolder;
 import rs.ac.bg.fon.molecious.model.Inference;
@@ -10,7 +11,7 @@ import rs.ac.bg.fon.molecious.model.User;
 import java.util.LinkedHashMap;
 
 @Setter
-public class InferenceBuilderImpl implements UserHolder, ProbabilitiesHolder, InferenceBuilder {
+public class InferenceBuilderImpl implements UserHolder, ProbabilitiesHolder, ImageUrlHolder, InferenceBuilder {
 
     private String imageUrl;
     private double actinicKeratosesProbability;
@@ -36,7 +37,7 @@ public class InferenceBuilderImpl implements UserHolder, ProbabilitiesHolder, In
     }
 
     @Override
-    public InferenceBuilder setProbabilities(LinkedHashMap<String, String> predictions) {
+    public ImageUrlHolder setProbabilities(LinkedHashMap<String, String> predictions) {
         predictions.forEach((clazz, probability) -> {
             switch (clazz) {
                 case "akiec":
@@ -65,6 +66,12 @@ public class InferenceBuilderImpl implements UserHolder, ProbabilitiesHolder, In
             }
         });
 
+        return this;
+    }
+
+    @Override
+    public InferenceBuilder setImageDownloadUrl(String imageDownloadUrl) {
+        setImageUrl(imageDownloadUrl);
         return this;
     }
 
