@@ -1,6 +1,7 @@
 package rs.ac.bg.fon.molecious.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import rs.ac.bg.fon.molecious.service.InferenceService;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +38,8 @@ public class InferenceServiceImpl implements InferenceService {
     private JwtUtil jwtUtil;
     @Autowired
     private WebClient.Builder webClientBuilder;
+    @Value("${firebase.project.id}")
+    private String firebaseProjectId;
 
     @Override
     public List<Inference> findAllByUserJWT(String JWT) {
@@ -59,6 +63,9 @@ public class InferenceServiceImpl implements InferenceService {
     public Inference createInferenceForUser(String JWT, MultipartFile file) {
         User user = extractUser(JWT);
         LinkedHashMap<String, String> predictions = extractPredictions(file);
+
+        LinkedHashMap<String, String> uploadResponse = uploadImageToFirebase(file);
+        String firebaseImageDownloadUrl = extractFirebaseImageDownloadUrl(uploadResponse);
 
         Inference inference = InferenceBuilderImpl.load()
                 .setInferenceUser(user)
@@ -116,5 +123,59 @@ public class InferenceServiceImpl implements InferenceService {
         }
 
         return convertedFile;
+    }
+
+    private LinkedHashMap<String, String> uploadImageToFirebase(MultipartFile file) {
+        String firebaseUploadUrl = new StringBuilder()
+                .append("https://firebasestorage.clients6.google.com/v0/b/")
+                .append(firebaseProjectId)
+                .append(".appspot.com/o?uploadType=multipart&name=")
+                .append((new Date()).getTime())
+                .append(".jpg")
+                .toString();
+
+        MultiValueMap<String, Object> data = new LinkedMultiValueMap<>();
+        data.add("file", new FileSystemResource(convert(file)));
+
+        return webClientBuilder.build()
+                .post()
+                .uri(firebaseUploadUrl)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(BodyInserters.fromMultipartData(data))
+                .retrieve()
+                .bodyToMono(LinkedHashMap.class)
+                .block();
+    }
+
+    private String extractFirebaseImageDownloadUrl(LinkedHashMap<String, String> uploadResponse) {
+        String name = null;
+        String token = null;
+
+        for (String key : uploadResponse.keySet()) {
+            if (name != null && token != null) {
+                break;
+            }
+
+            if (name == null && "name".equals(key)) {
+                name = uploadResponse.get(key);
+            }
+
+            if (token == null && "downloadTokens".equals(key)) {
+                token = uploadResponse.get(key);
+            }
+        }
+
+        return buildFirebaseImageDownloadUrl(name, token);
+    }
+
+    private String buildFirebaseImageDownloadUrl(String name, String token) {
+        return new StringBuilder()
+                .append("https://firebasestorage.googleapis.com/v0/b/")
+                .append(firebaseProjectId)
+                .append(".appspot.com/o/")
+                .append(name)
+                .append("?alt=media&token=")
+                .append(token)
+                .toString();
     }
 }
