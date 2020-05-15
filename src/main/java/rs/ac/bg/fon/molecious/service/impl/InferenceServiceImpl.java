@@ -10,6 +10,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import rs.ac.bg.fon.molecious.builder.impl.InferenceBuilderImpl;
 import rs.ac.bg.fon.molecious.config.security.util.JwtUtil;
 import rs.ac.bg.fon.molecious.controller.wrapper.Response;
 import rs.ac.bg.fon.molecious.exception.UserDoesNotExistException;

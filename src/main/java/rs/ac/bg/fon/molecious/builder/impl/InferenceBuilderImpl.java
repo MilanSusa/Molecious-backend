@@ -1,4 +1,4 @@
-package rs.ac.bg.fon.molecious.service.impl;
+package rs.ac.bg.fon.molecious.builder.impl;
 
 import lombok.Setter;
 import rs.ac.bg.fon.molecious.builder.InferenceBuilder;
