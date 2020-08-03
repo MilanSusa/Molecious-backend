@@ -29,10 +29,10 @@ public class UserDetailsServiceImplTests {
         user.setEmail("test@test.com");
         user.setPassword("test");
 
-        Mockito.when(userRepository.findByEmail("test@test.com"))
+        Mockito.when(userRepository.findByEmail(user.getEmail()))
                 .thenReturn(Optional.of(user));
 
-        UserDetails actualUserDetails = userDetailsService.loadUserByUsername("test@test.com");
+        UserDetails actualUserDetails = userDetailsService.loadUserByUsername(user.getEmail());
         UserDetails expectedUserDetails = new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),
@@ -48,11 +48,11 @@ public class UserDetailsServiceImplTests {
         user.setEmail("test@test.com");
         user.setPassword("test");
 
-        Mockito.when(userRepository.findByEmail("test@test.com"))
+        Mockito.when(userRepository.findByEmail(user.getEmail()))
                 .thenReturn(Optional.empty());
 
         Exception exception = org.junit.jupiter.api.Assertions.assertThrows(UsernameNotFoundException.class, () -> {
-            userDetailsService.loadUserByUsername("test@test.com");
+            userDetailsService.loadUserByUsername(user.getEmail());
         });
 
         String expectedMessage = "User with email test@test.com does not exist.";

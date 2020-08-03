@@ -29,7 +29,7 @@ public class UserRepositoryTests {
         user.setEmail("test@example.com");
         testEntityManager.persist(user);
 
-        Optional<User> optionalUser = userRepository.findByEmail("test@example.com");
+        Optional<User> optionalUser = userRepository.findByEmail(user.getEmail());
         Assertions.assertThat(optionalUser.isPresent()).isEqualTo(true);
     }
 

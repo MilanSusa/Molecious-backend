@@ -32,13 +32,13 @@ public class UserServiceImplTests {
         user.setEmail("test@test.com");
         user.setPassword("test");
 
-        Mockito.when(userRepository.findByEmail("test@test.com"))
+        Mockito.when(userRepository.findByEmail(user.getEmail()))
                 .thenReturn(Optional.empty());
 
         Mockito.when(userRepository.save(ArgumentMatchers.any(User.class)))
                 .thenReturn(user);
 
-        Mockito.when(bCryptPasswordEncoder.encode("test"))
+        Mockito.when(bCryptPasswordEncoder.encode(user.getPassword()))
                 .thenReturn("hashedTest");
 
         User savedUser = userService.signUp(user);
@@ -50,7 +50,7 @@ public class UserServiceImplTests {
         User user = new User();
         user.setEmail("test@test.com");
 
-        Mockito.when(userRepository.findByEmail("test@test.com"))
+        Mockito.when(userRepository.findByEmail(user.getEmail()))
                 .thenReturn(Optional.of(user));
 
         Exception exception = org.junit.jupiter.api.Assertions.assertThrows(UserAlreadyExistsException.class, () -> {
@@ -65,14 +65,14 @@ public class UserServiceImplTests {
 
     @Test
     public void findByEmailWhenUserExistsShouldReturnUser() {
-        User repoUser = new User();
-        repoUser.setEmail("test@test.com");
+        User expectedUser = new User();
+        expectedUser.setEmail("test@test.com");
 
-        Mockito.when(userRepository.findByEmail("test@test.com"))
-                .thenReturn(Optional.of(repoUser));
+        Mockito.when(userRepository.findByEmail(expectedUser.getEmail()))
+                .thenReturn(Optional.of(expectedUser));
 
-        User serviceUser = userService.findByEmail("test@test.com");
-        Assertions.assertThat(repoUser.getEmail()).isEqualTo(serviceUser.getEmail());
+        User actualUser = userService.findByEmail(expectedUser.getEmail());
+        Assertions.assertThat(expectedUser.getEmail()).isEqualTo(actualUser.getEmail());
     }
 
     @Test
