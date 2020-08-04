@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import rs.ac.bg.fon.molecious.builder.impl.InferenceBuilderImpl;
 import rs.ac.bg.fon.molecious.config.security.util.JwtUtil;
 import rs.ac.bg.fon.molecious.controller.wrapper.Response;
+import rs.ac.bg.fon.molecious.exception.InvalidJWTException;
 import rs.ac.bg.fon.molecious.exception.UserDoesNotExistException;
 import rs.ac.bg.fon.molecious.model.Inference;
 import rs.ac.bg.fon.molecious.model.User;
@@ -45,8 +46,11 @@ public class InferenceServiceImpl implements InferenceService {
     @Override
     public List<Inference> findAllByUserJWT(String JWT) {
         String email = jwtUtil.extractUsername(JWT);
-        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if (email == null) {
+            throw new InvalidJWTException("Invalid JWT.");
+        }
 
+        Optional<User> optionalUser = userRepository.findByEmail(email);
         if (optionalUser.isEmpty()) {
             throw new UserDoesNotExistException(
                     new StringBuilder()
