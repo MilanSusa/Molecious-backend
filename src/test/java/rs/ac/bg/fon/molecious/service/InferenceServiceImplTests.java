@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
 import rs.ac.bg.fon.molecious.config.security.util.JwtUtil;
 import rs.ac.bg.fon.molecious.exception.InvalidJWTException;
 import rs.ac.bg.fon.molecious.exception.UserDoesNotExistException;
@@ -141,5 +142,46 @@ public class InferenceServiceImplTests {
         List<Inference> actualInferences = inferenceService.findAllByUserJWT(testJWT);
 
         Assertions.assertThat(actualInferences).isEqualTo(expectedInferences);
+    }
+
+    @Test
+    public void createInferenceForUserWhenJWTIsNotValidShouldThrowInvalidJWTException() {
+        User user = new User();
+        user.setEmail("test@test.com");
+
+        Mockito.when(jwtUtil.extractUsername("testJWT"))
+                .thenReturn(user.getEmail());
+
+        Exception exception = org.junit.jupiter.api.Assertions.assertThrows(InvalidJWTException.class, () -> {
+            inferenceService.createInferenceForUser("wrongTestJWT", new MockMultipartFile("test", new byte[0]));
+        });
+
+        String expectedMessage = "Invalid JWT.";
+        String actualMessage = exception.getMessage();
+
+        Assertions.assertThat(actualMessage).isEqualTo(expectedMessage);
+    }
+
+    @Test
+    public void createInferenceForUserWhenUserDoesNotExistShouldThrowUserDoesNotExistException() {
+        User user = new User();
+        user.setId(1l);
+        user.setEmail("test@test.com");
+
+        String testJWT = "testJWT";
+
+        Mockito.when(jwtUtil.extractUsername(testJWT))
+                .thenReturn(user.getEmail());
+        Mockito.when(userRepository.findByEmail(user.getEmail()))
+                .thenReturn(Optional.empty());
+
+        Exception exception = org.junit.jupiter.api.Assertions.assertThrows(UserDoesNotExistException.class, () -> {
+            inferenceService.createInferenceForUser("testJWT", new MockMultipartFile("test", new byte[0]));
+        });
+
+        String expectedMessage = "User with email test@test.com does not exist.";
+        String actualMessage = exception.getMessage();
+
+        Assertions.assertThat(actualMessage).isEqualTo(expectedMessage);
     }
 }
