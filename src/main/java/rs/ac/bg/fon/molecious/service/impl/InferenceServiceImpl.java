@@ -45,23 +45,8 @@ public class InferenceServiceImpl implements InferenceService {
 
     @Override
     public List<Inference> findAllByUserJWT(String JWT) {
-        String email = jwtUtil.extractUsername(JWT);
-        if (email == null) {
-            throw new InvalidJWTException("Invalid JWT.");
-        }
-
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-        if (optionalUser.isEmpty()) {
-            throw new UserDoesNotExistException(
-                    new StringBuilder()
-                            .append("User with email ")
-                            .append(email)
-                            .append(" does not exist.")
-                            .toString()
-            );
-        }
-
-        return inferenceRepository.findAllByUserId(optionalUser.get().getId());
+        User user = extractUser(JWT);
+        return inferenceRepository.findAllByUserId(user.getId());
     }
 
     @Override
@@ -83,8 +68,11 @@ public class InferenceServiceImpl implements InferenceService {
 
     private User extractUser(String JWT) {
         String email = jwtUtil.extractUsername(JWT);
-        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if (email == null) {
+            throw new InvalidJWTException("Invalid JWT.");
+        }
 
+        Optional<User> optionalUser = userRepository.findByEmail(email);
         if (optionalUser.isEmpty()) {
             throw new UserDoesNotExistException(
                     new StringBuilder()
