@@ -27,7 +27,7 @@ public class UserControllerTests {
     private UserService userService;
 
     @Test
-    public void signUpShouldReturnCreatedUserWhenUserDoesNotExist() throws Exception {
+    public void signUpWhenUserDoesNotExistShouldReturnCreatedUser() throws Exception {
         User user = new User();
         user.setEmail("test@test.com");
 
@@ -42,7 +42,7 @@ public class UserControllerTests {
     }
 
     @Test
-    public void signUpShouldThrowUserAlreadyExistsExceptionWhenUserExists() {
+    public void signUpWhenUserExistsShouldThrowUserAlreadyExistsException() {
         User user = new User();
         user.setEmail("test@test.com");
 
