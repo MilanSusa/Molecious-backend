@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -91,5 +92,55 @@ public class InferenceControllerTests {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/inferences/users/jwt")
                 .cookie(new Cookie("JWT", jwt)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$..imageUrl").isArray());
+    }
+
+    @Test
+    public void createInferenceForUserWhenJWTIsNotValidShouldThrowInvalidJWTException() {
+        String jwt = "wrongTestJWT";
+        MockMultipartFile mockMultipartFile = new MockMultipartFile("file", new byte[0]);
+
+        Mockito.when(inferenceService.createInferenceForUser(jwt, mockMultipartFile))
+                .thenThrow(InvalidJWTException.class);
+
+        Exception exception = org.junit.jupiter.api.Assertions.assertThrows(NestedServletException.class, () -> {
+            mockMvc.perform(MockMvcRequestBuilders.multipart("/api/v1/inferences")
+                    .file(mockMultipartFile)
+                    .cookie(new Cookie("JWT", jwt)));
+        });
+
+        Assertions.assertTrue(exception.getCause() instanceof InvalidJWTException);
+    }
+
+    @Test
+    public void createInferenceForUserWhenUserDoesNotExistShouldThrowUserDoesNotExistException() {
+        String jwt = "testJWT";
+        MockMultipartFile mockMultipartFile = new MockMultipartFile("file", new byte[0]);
+
+        Mockito.when(inferenceService.createInferenceForUser(jwt, mockMultipartFile))
+                .thenThrow(UserDoesNotExistException.class);
+
+        Exception exception = org.junit.jupiter.api.Assertions.assertThrows(NestedServletException.class, () -> {
+            mockMvc.perform(MockMvcRequestBuilders.multipart("/api/v1/inferences")
+                    .file(mockMultipartFile)
+                    .cookie(new Cookie("JWT", jwt)));
+        });
+
+        Assertions.assertTrue(exception.getCause() instanceof UserDoesNotExistException);
+    }
+
+    @Test
+    public void createInferenceForUserWhenUserExistsShouldCreateInference() throws Exception {
+        String jwt = "testJWT";
+        MockMultipartFile mockMultipartFile = new MockMultipartFile("file", new byte[0]);
+        Inference inference = new Inference();
+        inference.setImageUrl("https://test.com");
+
+        Mockito.when(inferenceService.createInferenceForUser(jwt, mockMultipartFile))
+                .thenReturn(inference);
+
+        mockMvc.perform(MockMvcRequestBuilders.multipart("/api/v1/inferences")
+                .file(mockMultipartFile)
+                .cookie(new Cookie("JWT", jwt)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$..imageUrl").value(inference.getImageUrl()));
     }
 }
