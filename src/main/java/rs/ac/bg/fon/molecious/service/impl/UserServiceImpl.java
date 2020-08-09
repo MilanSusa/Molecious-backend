@@ -3,6 +3,7 @@ package rs.ac.bg.fon.molecious.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import rs.ac.bg.fon.molecious.exception.InvalidJWTException;
 import rs.ac.bg.fon.molecious.exception.UserAlreadyExistsException;
 import rs.ac.bg.fon.molecious.exception.UserDoesNotExistException;
 import rs.ac.bg.fon.molecious.model.User;
@@ -39,6 +40,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findByEmail(String email) {
+        if (email == null) {
+            throw new InvalidJWTException("Invalid JWT.");
+        }
+
         Optional<User> optionalUser = userRepository.findByEmail(email);
 
         if (optionalUser.isEmpty()) {
