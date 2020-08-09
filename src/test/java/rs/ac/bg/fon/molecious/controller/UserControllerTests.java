@@ -9,22 +9,31 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.util.NestedServletException;
+import rs.ac.bg.fon.molecious.config.security.util.JwtUtil;
+import rs.ac.bg.fon.molecious.exception.InvalidJWTException;
 import rs.ac.bg.fon.molecious.exception.UserAlreadyExistsException;
+import rs.ac.bg.fon.molecious.exception.UserDoesNotExistException;
 import rs.ac.bg.fon.molecious.model.User;
 import rs.ac.bg.fon.molecious.service.UserService;
 
+import javax.servlet.http.Cookie;
+
 @SpringBootTest
 @AutoConfigureMockMvc
+@WithMockUser
 public class UserControllerTests {
 
     @Autowired
     private MockMvc mockMvc;
     @MockBean
     private UserService userService;
+    @MockBean
+    private JwtUtil jwtUtil;
 
     @Test
     public void signUpWhenUserDoesNotExistShouldReturnCreatedUser() throws Exception {
@@ -57,5 +66,59 @@ public class UserControllerTests {
         });
 
         Assertions.assertTrue(exception.getCause() instanceof UserAlreadyExistsException);
+    }
+
+    @Test
+    public void extractUserFromJwtWhenJWTIsInvalidShouldThrowInvalidJWTException() {
+        String jwt = "wrongTestJWT";
+
+        Mockito.when(jwtUtil.extractUsername(jwt))
+                .thenReturn(null);
+
+        Mockito.when(userService.findByEmail(null))
+                .thenThrow(InvalidJWTException.class);
+
+        Exception exception = org.junit.jupiter.api.Assertions.assertThrows(NestedServletException.class, () -> {
+            mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/jwt")
+                    .cookie(new Cookie("JWT", jwt)));
+        });
+
+        Assertions.assertTrue(exception.getCause() instanceof InvalidJWTException);
+    }
+
+    @Test
+    public void extractUserFromJwtWhenUserDoesNotExistShouldThrowUserDoesNotExistException() {
+        String email = "wrong.test@test.com";
+        String jwt = "testJWT";
+
+        Mockito.when(jwtUtil.extractUsername(jwt))
+                .thenReturn(email);
+
+        Mockito.when(userService.findByEmail(email))
+                .thenThrow(UserDoesNotExistException.class);
+
+        Exception exception = org.junit.jupiter.api.Assertions.assertThrows(NestedServletException.class, () -> {
+            mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/jwt")
+                    .cookie(new Cookie("JWT", jwt)));
+        });
+
+        Assertions.assertTrue(exception.getCause() instanceof UserDoesNotExistException);
+    }
+
+    @Test
+    public void extractUserFromJwtWhenJWTIsValidAndUserExistsShouldReturnUser() throws Exception {
+        String jwt = "testJWT";
+        User user = new User();
+        user.setEmail("test@test.com");
+
+        Mockito.when(jwtUtil.extractUsername(jwt))
+                .thenReturn(user.getEmail());
+
+        Mockito.when(userService.findByEmail(user.getEmail()))
+                .thenReturn(user);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/jwt")
+                .cookie(new Cookie("JWT", jwt)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$..email").value(user.getEmail()));
     }
 }
