@@ -8,6 +8,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import rs.ac.bg.fon.molecious.config.security.util.JwtUtil;
+import rs.ac.bg.fon.molecious.exception.InvalidJWTException;
 import rs.ac.bg.fon.molecious.exception.UserAlreadyExistsException;
 import rs.ac.bg.fon.molecious.exception.UserDoesNotExistException;
 import rs.ac.bg.fon.molecious.model.User;
@@ -23,6 +25,8 @@ public class UserServiceImplTests {
     private UserRepository userRepository;
     @Mock
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+    @Mock
+    private JwtUtil jwtUtil;
     @InjectMocks
     private UserServiceImpl userService;
 
@@ -64,24 +68,55 @@ public class UserServiceImplTests {
     }
 
     @Test
-    public void findByEmailWhenUserExistsShouldReturnUser() {
+    public void extractUserFromJWTWhenUserExistsShouldReturnUser() {
+        String jwt = "testJWT";
         User expectedUser = new User();
         expectedUser.setEmail("test@test.com");
 
+        Mockito.when(jwtUtil.extractUsername(jwt))
+                .thenReturn(expectedUser.getEmail());
         Mockito.when(userRepository.findByEmail(expectedUser.getEmail()))
                 .thenReturn(Optional.of(expectedUser));
 
-        User actualUser = userService.findByEmail(expectedUser.getEmail());
+        User actualUser = userService.extractUserFromJWT(jwt);
         Assertions.assertThat(expectedUser.getEmail()).isEqualTo(actualUser.getEmail());
     }
 
     @Test
-    public void findByEmailWhenUserDoesNotExistShouldThrowUserDoesNotExistException() {
+    public void extractUserFromJWTWhenUserDoesNotExistShouldThrowUserDoesNotExistException() {
+        String jwt = "testJWT";
+        User expectedUser = new User();
+        expectedUser.setEmail("test@test.com");
+
+        Mockito.when(jwtUtil.extractUsername(jwt))
+                .thenReturn(expectedUser.getEmail());
+        Mockito.when(userRepository.findByEmail(expectedUser.getEmail()))
+                .thenReturn(Optional.empty());
+
         Exception exception = org.junit.jupiter.api.Assertions.assertThrows(UserDoesNotExistException.class, () -> {
-            userService.findByEmail("test@test.com");
+            userService.extractUserFromJWT(jwt);
         });
 
         String expectedMessage = "User with email test@test.com doesn't exist.";
+        String actualMessage = exception.getMessage();
+
+        Assertions.assertThat(actualMessage).isEqualTo(expectedMessage);
+    }
+
+    @Test
+    public void extractUserFromJWTWhenJWTIsInvalidShouldThrowInvalidJWTException() {
+        String jwt = "wrongTestJWT";
+        User expectedUser = new User();
+        expectedUser.setEmail("test@test.com");
+
+        Mockito.when(jwtUtil.extractUsername(jwt))
+                .thenReturn(null);
+
+        Exception exception = org.junit.jupiter.api.Assertions.assertThrows(InvalidJWTException.class, () -> {
+            userService.extractUserFromJWT(jwt);
+        });
+
+        String expectedMessage = "Invalid JWT.";
         String actualMessage = exception.getMessage();
 
         Assertions.assertThat(actualMessage).isEqualTo(expectedMessage);

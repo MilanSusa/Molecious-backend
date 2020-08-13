@@ -69,13 +69,10 @@ public class UserControllerTests {
     }
 
     @Test
-    public void extractUserFromJwtWhenJWTIsInvalidShouldThrowInvalidJWTException() {
+    public void extractUserFromJWTWhenJWTIsInvalidShouldThrowInvalidJWTException() {
         String jwt = "wrongTestJWT";
 
-        Mockito.when(jwtUtil.extractUsername(jwt))
-                .thenReturn(null);
-
-        Mockito.when(userService.findByEmail(null))
+        Mockito.when(userService.extractUserFromJWT(jwt))
                 .thenThrow(InvalidJWTException.class);
 
         Exception exception = org.junit.jupiter.api.Assertions.assertThrows(NestedServletException.class, () -> {
@@ -87,14 +84,10 @@ public class UserControllerTests {
     }
 
     @Test
-    public void extractUserFromJwtWhenUserDoesNotExistShouldThrowUserDoesNotExistException() {
-        String email = "wrong.test@test.com";
+    public void extractUserFromJWTWhenUserDoesNotExistShouldThrowUserDoesNotExistException() {
         String jwt = "testJWT";
 
-        Mockito.when(jwtUtil.extractUsername(jwt))
-                .thenReturn(email);
-
-        Mockito.when(userService.findByEmail(email))
+        Mockito.when(userService.extractUserFromJWT(jwt))
                 .thenThrow(UserDoesNotExistException.class);
 
         Exception exception = org.junit.jupiter.api.Assertions.assertThrows(NestedServletException.class, () -> {
@@ -106,15 +99,12 @@ public class UserControllerTests {
     }
 
     @Test
-    public void extractUserFromJwtWhenJWTIsValidAndUserExistsShouldReturnUser() throws Exception {
+    public void extractUserFromJWTWhenJWTIsValidAndUserExistsShouldReturnUser() throws Exception {
         String jwt = "testJWT";
         User user = new User();
         user.setEmail("test@test.com");
 
-        Mockito.when(jwtUtil.extractUsername(jwt))
-                .thenReturn(user.getEmail());
-
-        Mockito.when(userService.findByEmail(user.getEmail()))
+        Mockito.when(userService.extractUserFromJWT(jwt))
                 .thenReturn(user);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/users/jwt")
