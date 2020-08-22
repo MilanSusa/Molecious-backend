@@ -42,6 +42,8 @@ public class InferenceServiceImpl implements InferenceService {
     private WebClient.Builder webClientBuilder;
     @Value("${firebase.project.id}")
     private String firebaseProjectId;
+    @Value("${skin.cancer.detection.inference.api.base.url}")
+    private String skinCancerDetectionInferenceApiBaseUrl;
 
     @Override
     public List<Inference> findAllByUserJWT(String JWT) {
@@ -96,7 +98,7 @@ public class InferenceServiceImpl implements InferenceService {
 
         return webClientBuilder.build()
                 .post()
-                .uri("http://localhost:8000/api/v1/inference")
+                .uri(skinCancerDetectionInferenceApiBaseUrl + "/api/v1/inference")
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(BodyInserters.fromMultipartData(data))
                 .retrieve()
