@@ -1,17 +1,13 @@
 language: java
-
 services:
-  - postgresql
-
+- postgresql
 before_install:
-  - chmod +x mvnw
-
+- chmod +x mvnw
 before_script:
-  - psql -c 'create database molecious;' -U postgres
-
+- psql -c 'create database molecious;' -U postgres
 deploy:
   provider: heroku
   skip_cleanup: true
   app: molecious-backend
   api_key:
-    secure: ezD7S7wOs4rOyW9p7gALdVzrEIc3TL26FtcKFj4bzPkVjQAXdMXEG3diFkTvB+1DBHmUI//xB4uglc75f3K+tn5UZFx0Mcxw3Z+EgNppM1rPThon6nMtTr4KGD4HfZ69G3s4eObIWLT/PoXUN0iKg9jjNO1hHjG7P9qxeLFLLRRZSIPVvzIeTxOC7JvKWR8lAoLyX5ZL8YSpq7BTNwjRIhIi2/0eeHkUm3E9H5ADqbQ1E7Sg2RkfUl9rNUlU7cqikg1SYtLrUAzWtcUgzSOokMPenjWMTJENcwnRmqOTGtxS6vZZoUUrm8tUZuZFgPt2bNWZFRGOwjwhwAvZlbRKns3kEQ7+h/0XfG/wh8sYor3EQYTofb4o7uqQ96l4PBjbo010dQanmLL7qOq5BaPze4tMsBFc55RxKHHtnHlwBCuP6peWoHBEoBHXLIFYtKAE7okI+euAhFZNiHxDxMSZM3Qg/VzcU5iykCCtYGuXfxL+wHn3m3pAYYNy3g0gkfRvAtZsuLNxpfQ95juZVbLg0HAEtZrfANq6zQ9bHrumccosjlXk3kWHxfu2B2KO8/cFK0rudUpfJ1cwkELa5mENUDdNTXbXf/zkFRAuojBKEQfUYp5364ag31YPVDan+q0lF6u3CL+XuAcfIT8Ey1iPpIYyWA+VqaW1AW8FaoiPXYo=
+    secure: f7g5lxUj13zzK+d4SbD/ggocUpicEFb+pap42MYOC/VEbiI1saWm9/31driMtIdmQM+Bm3/sWitlKUnbeK4Qqsj88pfnrqXTjTO6k4dq4Ffra4VdJCYLP4TZTmU+kwhjSk6XkZ7g1rm2Ta0qj5aa82xdzbS6JRtkwvyRw4iqOsb4FSL8nX27yovwHFiZMP1jjcLoWjsinzxRL7+arJ3SKtfFV6GbWpJxIQA/K/w/sBaONo75VlIYb+piSrgSbbXSUIQvQQMGVaR1J1+0k15Fouu2Duw9y3Thbus5zR+k6lGGuvvV9jioxUC7Bes2GE5JOfeGusXh7C2/fwSrl61fVgJqg60TWO/gp9inojaTR8j2MURP54Kb6dWLZIBqrdPAjlGZQsa/mxgtXfCOfJtrw6BPnPwQQePo7/iiG717fAlj9Q0WrIA7lWVjiua13lQfzivtuv0X/WXHAvMZBIiWVXbrrkv2vGg9aBORuZFCMWKEuPr/0RhpO3D9MIhz6LxV5xCaYuDIhEmriLqRrUR/yQRMxKDvHUFvbxkJdLQBMJhqKTLLkoChCi5aPe+Stjydaw65ebQqHcPYJ803kWgceyPl1yOqfXlRO4gbZWL2XQ+eEDzbkq6S6U1BZHOaYoIBfyUl33mGFWRVIw/2Sm+h3k8ISTtNpcocPPihikb3n5Q=
