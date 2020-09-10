@@ -13,6 +13,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import rs.ac.bg.fon.molecious.builder.impl.InferenceBuilderImpl;
 import rs.ac.bg.fon.molecious.config.security.util.JwtUtil;
 import rs.ac.bg.fon.molecious.controller.wrapper.Response;
+import rs.ac.bg.fon.molecious.exception.InferenceNotPerformedException;
+import rs.ac.bg.fon.molecious.exception.InferenceNotSavedException;
 import rs.ac.bg.fon.molecious.exception.InvalidJWTException;
 import rs.ac.bg.fon.molecious.exception.UserDoesNotExistException;
 import rs.ac.bg.fon.molecious.model.Inference;
@@ -54,7 +56,13 @@ public class InferenceServiceImpl implements InferenceService {
     @Override
     public Inference createInferenceForUser(String JWT, MultipartFile file) {
         User user = extractUser(JWT);
-        LinkedHashMap<String, String> predictions = extractPredictions(file);
+
+        LinkedHashMap<String, String> predictions = null;
+        try {
+            predictions = extractPredictions(file);
+        } catch (Exception e) {
+            throw new InferenceNotPerformedException("An error occurred while performing inference.");
+        }
 
         LinkedHashMap<String, String> uploadResponse = uploadImageToFirebase(file);
         String firebaseImageDownloadUrl = extractFirebaseImageDownloadUrl(uploadResponse);
@@ -65,7 +73,14 @@ public class InferenceServiceImpl implements InferenceService {
                 .setImageDownloadUrl(firebaseImageDownloadUrl)
                 .build();
 
-        return inferenceRepository.save(inference);
+        Inference savedInference = null;
+        try {
+            savedInference = inferenceRepository.save(inference);
+        } catch (Exception e) {
+            throw new InferenceNotSavedException("An error occurred while saving inference.");
+        }
+
+        return savedInference;
     }
 
     private User extractUser(String JWT) {
